@@ -1,0 +1,106 @@
+Shared Services vpc service perimeter:
+
+name: zyx-ss-600001687-interconnect
+parent:
+  id: '243986997266'
+  type: folder
+projectId: zyx-ss-600001687-interconnect
+projectNumber: '195986667758'
+
+name: zyx-ss-600001687-shared-vpc
+parent:
+  id: '243986997266'
+  type: folder
+projectId: zyx-ss-600001687-shared-vpc
+projectNumber: '656337955531'
+
+===============================================================
+
+# Copyright 2021 Google LLC. This software is provided as-is, without warranty or representation for any use or purpose. Your use of it is subject to your agreement with Google.
+
+
+parent_id = "678233521001" # Org ID
+
+perimeter_name = "shared_service_perimeter" # Name of Perimeter
+
+ip_subnetworks = ["192.0.1.0/24", "172.0.2.0/24"] # External IP blocks to be allowed
+
+policy = "898936022468" # Org policy name
+
+access_level_name_1 = "a_ext_ips" # Access level name
+
+perimeter_resources = ["195986667758", "656337955531"] # Perimeter's Project numbers
+ingress_policies = [
+  { # Ingress rule for TFE Service Account               
+    "from" = {
+      "sources" = {
+        resources = [
+          "projects/527470380311" # Number of Project which contains TFE Service Account
+        ],
+        access_levels = [
+        ]
+      },
+      "identity_type" = "" # "ANY_IDENTITY","ANY_USER_ACCOUNT","ANY_SERVICE_ACCOUNT" are allowed values or
+      "identities" = [
+        "serviceAccount:org-terraform@amx-us-bootstrap-seed-bf5870.iam.gserviceaccount.com" # TFE Service Account Name
+      ]
+    }
+    "to" = {
+      "resources" = ["*"]
+      "operations" = {
+      }
+    }
+  },
+  { # Ingress rule for External Trusted IPS             
+    "from" = {
+      "sources" = { # Name of Project which contains TFE Service Account
+        resources = [
+        ],
+        access_levels = [
+          "ss_ext_ips" # Applying Access Level/s
+        ]
+      },
+      "identity_type" = "ANY_USER_ACCOUNT" # "ANY_IDENTITY","ANY_USER_ACCOUNT","ANY_SERVICE_ACCOUNT" are allowed values
+      "identities" = [
+      ]
+    }
+    "to" = {
+      "resources" = ["*"]
+      "operations" = {
+      }
+    }
+  },
+]
+egress_policies = [{ # Egress policy for logging
+  "from" = {
+    "sources" = {
+      resources = [ # Shared Service Project Numbers  
+        "projects/195986667758",
+        "projects/656337955531",
+      ],
+      access_levels = [
+      ]
+    },
+    "identity_type" = "ANY_SERVICE_ACCOUNT" # "ANY_IDENTITY","ANY_USER_ACCOUNT","ANY_SERVICE_ACCOUNT" are allowed values
+    "identities"    = []
+  },
+  "to" = {
+    "resources" = [
+      "projects/507858473781" # Production Logging Project Numbers
+    ]
+    "operations" = {
+      "bigquery.googleapis.com" = {
+        "methods" = ["*"]
+      }
+      "logging.googleapis.com" = {
+        "methods" = ["*"]
+      }
+      "storage.googleapis.com" = {
+        "methods" = [
+          "google.storage.objects.create"
+        ]
+      }
+    }
+  }
+  }
+]
